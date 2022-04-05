@@ -1,12 +1,11 @@
 ---
-title: "My title"
+title: "DeFi Attack Analysis"
 subtitle: "My subtitle if needed"
 author: 
-  - First author
-  - Another author
-thanks: "Code and data are available at: LINK."
+  - Jack McKay
+thanks: "Code and data are available at: https://defiyield.app/rekt-database"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+abstract: "Decentralized finance (DeFi) describes the emerging ecosystem of financial services, protocols and applications built on and designed for public blockchains such as Ethereum and Algorand. One of the most promising applications of blockchain technology, DeFi has experienced explosive growth over the last few years. But with this growth has also come the attention of bad actors, who aim to exploit flaws in protocol security for personal gain. Using data collected by DeFi Yield's REKT Database on the 200 most costly exploits of DeFi protocols, this paper will analyze and identify trends in these exploits, with the goal of identifying the most common types of exploits, as well as other trends and patterns that may precipitate a hostile attack."
 output:
   bookdown::pdf_document2
 toc: FALSE
@@ -15,14 +14,18 @@ bibliography: references.bib
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
-library(tidyverse)
-library(palmerpenguins)
 ```
+
+```{r, include=FALSE}
+library(tidyverse)
+library(janitor)
+library(tidyr)
+```
+
 
 # Introduction
 
-You can and should cross-reference sections and sub-sections. For instance, Section \@ref(data). R Markdown automatically makes the sections lower case and adds a dash to spaces to generate labels, for instance, Section \@ref(first-discussion-point). 
+Imagine a world where financial services are available to anyone, from any location, 24 hours a day, 7 days a week, without the need for any intermediaries. One where financial transactions are fully automated, eliminating the need for any intermediary financial institutions, reducing human error and lowering transactions fees. All transactions are stored on a public, open-source ledger, allowing for complete transparency. Such a world is becoming increasingly feasible by the day, and the key to achieving it lies in decentralized finance (DeFi). DeFi is a completely open source and decentralized ecosystem running on blockchain technology that offers users financial services such as loans, payments, asset management and derivatives, as well as access to decentralized crypto exchanges (DEXes). DeFi minimizes--and in many cases eliminates-- the need for centralized institutions such as banks or brokerages. Interactions on DeFi are peer-to-peer and are completed via smart contracts, self-executing computer programs functioning as contracts between parties that automatically execute when certain pre-set conditions are met. As such, DeFi aims to return control over individual's finances back to the individual, restoring freedom of choice to the financial industry. The near-unlimited potential of DeFi has not gone unnoticed, with the industry as a whole experiencing incredible growth. DeFi's current market cap is \$147 billion as of April 2022, up from $2 Billion two years ago (@coinGecko), an annual growth rate of 757.32%. One of the primary drivers of this growth is a design principle known as "permissionless composability", wherein developers are able to employ any combination of pre-existing DeFi protocols, without requiring any permissions, in order to fulfill specific use cases. This allows developers to create and interact with limitless combinations of protocols, without any third party controlling any aspect of the network activity, creating a seamless and frictionless innovation cycle wherein users can build off of each others work. Indeed, permissionless composability is one of the fundamental innovations that has allowed DeFi to grow so quickly. However, this growth has not been without setbacks. One of the primary drawbacks to DeFi is its vulnerability to hackers. By nature of the way composability allows applications to work on top of each other, if the base chain was to suffer an attack, all of the applications built on top of it would also be at risk. As well, as transactions are executed automatically via smart contracts and without human oversight, this means that a bug in a smart contract can be exploited by hackers and used to reroute funds from the transaction. Due to these risks, identifying and preventing possible attacks is one of the primary focuses of the DeFi community at the moment. Using data collected by DeFi Yield and scraped by Octoparse, this paper will analyze data from the 200 costliest attacks on DeFi protocols in order to identify the sectors most vulnerable to hostile attacks, as well as the types of attacks that are most frequent, with the goal of determining where DeFi cybersecurity efforts would best be focused. 
 
 
 
@@ -30,33 +33,27 @@ You can and should cross-reference sections and sub-sections. For instance, Sect
 
 Our data is of penguins (Figure \@ref(fig:bills)).
 
-```{r bills, fig.cap="Bills of penguins", echo = FALSE}
-ggplot(penguins, aes(x = island, fill = species)) +
-  geom_bar(alpha = 0.8) +
-  scale_fill_manual(values = c("darkorange","purple","cyan4"),
-                    guide = FALSE) +
-  theme_minimal() +
-  facet_wrap(~species, ncol = 1) +
-  coord_flip()
+```{r, include = FALSE}
+# Read in the raw data. 
+raw_data <- read.csv (here::here("inputs/data/DeFiAttackData.csv"))
+
+# Basic Data Cleaning
+raw_data <- subset(raw_data, select = -c(Title:Date)) 
+raw_data <- subset(raw_data, select = -c(Image1, Label, column))
+
+raw_data <-
+  raw_data %>% 
+  rename(project_url = Name_URL,
+         project = Name,
+         chain = Info2,
+         type_of_issue = Inf1,
+         funds_lost = Price1,
+         date = Date1)
+
+cleaned_data <-
+  raw_data %>% 
+  slice_head(n = 200)
 ```
-
-Talk more about it.
-
-Also bills and their average (Figure \@ref(fig:billssssss)). (Notice how you can change the height and width so they don't take the whole page?)
-
-```{r billssssss, fig.cap="More bills of penguins", echo = FALSE, fig.width=8, fig.height=4}
-
-# This needs to be about the random data tha tI sasmpled?
-ggplot(penguins, aes(x = island, fill = species)) +
-  geom_bar(alpha = 0.8) +
-  scale_fill_manual(values = c("darkorange","purple","cyan4"),
-                    guide = FALSE) +
-  theme_minimal() +
-  facet_wrap(~species, ncol = 1) +
-  coord_flip()
-```
-
-Talk way more about it. 
 
 
 
@@ -103,5 +100,4 @@ Weaknesses and next steps should also be included.
 
 
 # References
-
 
