@@ -1,11 +1,11 @@
 ---
-title: "DeFi Attack Analysis"
-subtitle: "My subtitle if needed"
+title: "DeFi-ing Cyber Attacks"
+subtitle: "A statistical analysis of cybersecurity attacks in decentralized finance"
 author: 
   - Jack McKay
 thanks: "Code and data are available at: https://github.com/jmacattack27"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-abstract: "Decentralized finance (DeFi) describes the emerging ecosystem of financial services, protocols and applications built on and designed for public blockchains such as Ethereum and Algorand. One of the most promising applications of blockchain technology, DeFi has experienced explosive growth over the last few years. But with this growth has also come the attention of bad actors, who aim to exploit flaws in protocol security for personal gain. Using data collected by DEFIYIELD's REKT Database on the 200 most costly exploits of DeFi protocols, this paper will analyze and identify trends in these exploits, with the goal of identifying the most common types of exploits, as well as other trends and patterns that may precipitate a hostile attack."
+abstract: "Decentralized finance (DeFi) describes the emerging ecosystem of financial services, protocols and applications built on and designed for public blockchains such as Ethereum and Algorand. One of the most promising applications of blockchain technology, DeFi has experienced explosive growth over the last few years. But with this growth has also come the attention of bad actors, who aim to exploit flaws in protocol security for personal gain. Using data collected by DEFIYIELD's REKT Database on the 200 most costly attacks on DeFi protocols, this paper will analyze and identify trends in these attacks, with the goal of identifying what types of attacks are most common and most costly to the DeFi sector as a whole, as well as for individual chains, in order to determine where cybersecurity efforts would best be focused."
 output:
   bookdown::pdf_document2
 toc: FALSE
@@ -26,21 +26,21 @@ library(gridExtra)
 library(tidyselect)
 library(reshape2)
 library("viridis")
+library(kableExtra)
 ```
 
 
 # Introduction
 
-Imagine a world where financial services are available to anyone, from any location, 24 hours a day, 7 days a week, without the need for any intermediaries. One where financial transactions are fully automated, eliminating the need for any intermediary financial institutions, reducing human error and lowering transactions fees. All transactions are stored on a public, open-source ledger, allowing for complete transparency. Such a world is becoming increasingly feasible by the day, and the key to achieving it lies in decentralized finance (DeFi). DeFi is a completely open source and decentralized ecosystem running on blockchain technology that offers users financial services such as loans, payments, asset management and derivatives, as well as access to decentralized crypto exchanges (DEXes). DeFi minimizes--and in many cases eliminates-- the need for centralized institutions such as banks or brokerages. Interactions on DeFi are peer-to-peer and are completed via smart contracts, self-executing computer programs functioning as contracts between parties that automatically execute when certain pre-set conditions are met. As such, DeFi aims to return control over individual's finances back to the individual, restoring freedom of choice to the financial industry. The near-unlimited potential of DeFi has not gone unnoticed, with the industry as a whole experiencing incredible growth. DeFi's current market cap is \$147 billion as of April 2022, up from $2 Billion two years ago (@coinGecko), an annual growth rate of 757.32%. One of the primary drivers of this growth is a design principle known as "permissionless composability", wherein developers are able to employ any combination of pre-existing DeFi protocols, without requiring any permissions, in order to fulfill specific use cases. This allows developers to create and interact with limitless combinations of protocols, without any third party controlling any aspect of the network activity, creating a seamless and frictionless innovation cycle wherein users can build off of each others work. Indeed, permissionless composability is one of the fundamental innovations that has allowed DeFi to grow so quickly. However, this growth has not been without setbacks. One of the primary drawbacks to DeFi is its vulnerability to hackers. By nature of the way composability allows applications to work on top of each other, if the base chain was to suffer an attack, all of the applications built on top of it would also be at risk. As well, as transactions are executed automatically via smart contracts and without human oversight, this means that a bug in a smart contract can be exploited by hackers and used to reroute funds from the transaction. Due to these risks, identifying and preventing possible attacks is one of the primary focuses of the DeFi community at the moment. Using data collected by DEFIYIELD and scraped by Octoparse, this paper will analyze data from the 200 costliest attacks on DeFi protocols in order to identify the sectors most vulnerable to hostile attacks, as well as the types of attacks that are most frequent, with the goal of determining where DeFi cybersecurity efforts would best be focused. 
-
+Imagine a world where financial services are available to anyone, from any location, 24 hours a day, 7 days a week, without the need for any intermediaries. One where financial transactions are fully automated, eliminating the need for any intermediary financial institutions, reducing human error and lowering transactions fees. All transactions are stored on a public, open-source ledger, allowing for complete transparency. Such a world is becoming increasingly feasible by the day, and the key to achieving it lies in decentralized finance (DeFi). DeFi is a completely open source and decentralized ecosystem running on blockchain technology that offers users financial services such as loans, payments, asset management and derivatives, as well as access to decentralized crypto exchanges (DEXes). DeFi minimizes--and in many cases eliminates-- the need for centralized institutions such as banks or brokerages. Interactions on DeFi are peer-to-peer and are completed via smart contracts, self-executing computer programs functioning as contracts between parties that automatically execute when certain pre-set conditions are met. As such, DeFi aims to return control over individual's finances back to the individual, restoring freedom of choice to the financial industry. The near-unlimited potential of DeFi has not gone unnoticed, with the industry as a whole experiencing incredible growth. DeFi's current market cap is \$147 billion as of April 2022, up from $2 Billion two years ago (@coinGecko), an annual growth rate of 757.32%. One of the primary drivers of this growth is a design principle known as "permissionless composability", wherein developers are able to employ any combination of pre-existing DeFi protocols, without requiring any permissions, in order to fulfill specific use cases. This allows developers to create and interact with limitless combinations of protocols, without any third party controlling any aspect of the network activity, creating a seamless and frictionless innovation cycle wherein users can build off of each others work. Indeed, permissionless composability is one of the fundamental innovations that has allowed DeFi to grow so quickly. However, this growth has not been without setbacks. One of the primary drawbacks to DeFi is its vulnerability to hackers. By nature of the way composability allows applications to work on top of each other, if the base chain was to suffer an attack, all of the applications built on top of it would also be at risk. As well, as transactions are executed automatically via smart contracts and without human oversight, this means that a bug in a smart contract can be exploited by hackers and used to reroute funds from the transaction. Due to these risks, identifying and preventing possible attacks is one of the primary focuses of the DeFi community at the moment. Using data collected by DEFIYIELD and scraped by Octoparse as well as secondary data from DefiLlama, this paper will analyze data on the 200 costliest attacks in decentralized finance in order to identify which types of attacks are most common, most costly, and most dangerous to particular chains. This is done with the overarching goal of determining where DeFi cybersecurity efforts would best be focused on both an industry level and individual level. 
 
 
 # Data
 
 
-## Data Source
+## Data Source and Methodology
 
-The data used in this report was collected by DEFIYIELD in their public Rekt Database, a database containing information on all recorded DeFi scams, hacks and exploits, including the total funds lost in each event, as well as a breakdown of the technical issues that led to the hack. Data on the 200 costliest attacks was then scraped from the DEFIYIELD's website via Octoparse, an a visual web data extraction software, before being downloaded into a .csv file, at which point it was uploaded to R, cleaned, and made ready for analysis.
+The primary data used in this report was collected by DEFIYIELD in their public Rekt Database, a database containing information on all recorded DeFi scams, hacks and exploits, including the total funds lost in each event, as well as a breakdown of the technical issues that led to the hack. Data on the 200 costliest attacks was then scraped from the DEFIYIELD's website via Octoparse, an a visual web data extraction software, before being downloaded into a .csv file, at which point it was uploaded to R, cleaned, and made ready for analysis. Further data on the total value locked (TVL) in each analyzed chain was obtained from DefiLlama's TVL database. This data consisted of 15 observations of two variables, Chain and TVL, and was manually acquired and included in the analysis. 
 
 
 ## Data Collection
@@ -86,13 +86,33 @@ Malicious events are further defined as follows:
   
   * Access Control: A scam in which the attacker obtains access to a targets digital wallet or authentication keys.
   
+Further data on the total value locked (TVL) across each chain was manually obtained from DefiLlama's public TVL database and used to provide context to certain aspects of the analysis. The data in this database is acquired from CoinGecko, and consists of 107 observations of 7 variables;
+
+  * Chain name
+  * The number of active protocols on the chain
+  * 1 day change in TVL
+  * 7 day change in TVL
+  * 1 month change in TVL
+  * Total Value Locked
+  * Market Cap / TVL
+  
+For our analysis we were are interested in the 15 chains included in our initial data set, and of those 15 chains we were only interested in the TVL, so the data pulled from this source consisted of 15 observations of 2 variables, chain name and TVL. 
+  
   
 ## Data Analysis
 
-This dataset scraped from DEFIYIELD's public Rekt Database via the data extraction software Octoparse (@Octoparse), before being imported to JupyterHub. Data was then processed and analyzed using the R programming language (@citeR), as well as tidyverse (@tidyverse), tidyr (@tidyr) and dplyr (@dplyr) programming packages. The package janitor (@janitor) was used to clean column names. 
+This dataset scraped from DEFIYIELD's public Rekt Database via the data extraction software Octoparse (@Octoparse), before being imported to JupyterHub. Data was then processed and analyzed using the R programming language (@citeR), as well as tidyverse (@tidyverse), tidyr (@tidyr) and dplyr (@dplyr) programming packages. The package janitor (@janitor) was used to clean column names. gridExtra (@gridExtra) and reshape2 (@reshape2) were used to format the graphs, while viridis (@viridis) was used for data visualization, in particular modifying graph colours. 
 
 
-### Exploitation Rates by Chain
+## Strengths and Weaknesses
+
+The data used in this study has both strengths and weaknesses. In particular, the database from which the data in this study was pulled is especially thorough in its technical breakdown of the attacks, including data on whether the attacked project's team is public, if the project had verified source code, as well as links containing proof of the attack and the wallets associated with the attack. The methods through which new data is added to the database are also thorough and involve multiple reviews of the incident, giving us confidence in the validity of the data. As well, the UI of the database website is user friendly, allowing parties to sort the data based on the chain on which the attack occurred, the type of attack, how much funds were lost and the date on which the attack occurred. The website also includes interactive graphs that help visualize the data. On the other hand, the website provides no option to download the database in its entirety or in any capacity, which leads to the main weaknesses of this data; the limited number of observations, and missed variables. As a result of being unable to download the database, I needed to use an external data extraction program, Octoparse, in order to download the data into a .csv file. While I was able to acquire a solid amount of observations on a number of useful variables, a lot of data was lost in the process. In particular, the number of attacks I could scrape was limited by the number of entries the REKT database could show on one page, which maxed out at 200. Luckily this was still enough data points to allow for meaningful statistical analysis, but it only accounts for 7.4% of the total data entries in the database. As well, due to the database's interface, Octoparse was unable to scrape certain variables, in particular the indicator variables: 'Public Team', 'Verified source code' and 'Audited code matches with deployed smart contracts code'. As well, due to the manner in which the technical breakdown of the attack was conveyed in the database, I was unable to use much of the detailed information in these breakdowns. Despite these weaknesses, the final data set retained much of the information on the attacks, and the most important variables were successfully captured. 
+
+data on attack type not as detailed as it could be
+
+# Results
+
+## Exploitation Rates by Chain
 
 The first aspect of the data that I analyzed was which chains were being exploited most frequently. Summing the number of exploits on each chain into a new data frame, Figure \@ref(fig:chainproportion) shows the distribution of attacks across all recorded chains. Here we see that the vast majority of attacks occur on either Ethereum (ETH) or Binance Smart Chain (BSC); 50.5% and 30.5% respectively. The remaining 19% of attacks are spread more evenly across the other chains, with Polygon, Solana, Fantom and Avalanche (AVAX) accounting for a combined 12.5% of total attacks. The remaining 6.5% is distributed evenly across the remaining chains.
 
@@ -192,9 +212,9 @@ grid.arrange(x, y, nrow = 2)
 ```
 
 
-### Attack Rates by Type of Attack
+## Attack Rates by Type of Attack
 
-The next aspect of the data I analyzed was the distribution of attack data, in terms of what types of attacks are most common, which types have historically resulted in the most damage, and which types are most damaging on average. Figure \@ref(fig:attackdata) shows the distribution of attack types, based on frequency, total damage and average damage. Here we see that exploits are by far the most prevalent types of attacks across all metrics, being more than twice as common as any other attack, and almost 3 times more costly on average. We also notice that despite being the second most common attack, exit scams are only the 4th costliest attacks on average, with both access control and flash loan attacks costing more on average. Abandoned projects are by far the least common attack, and are only slightly less costly than honeypot attacks, the second least damaging attack.
+The next aspect of the data I analyzed was the distribution of attack data, in terms of what types of attacks are most common, which types have historically resulted in the most damage, and which types are most damaging on average. Figure \@ref(fig:attackdata) shows the distribution of attack types, based on frequency, total damage and average damage. Here we see that exploits are by far the most prevalent types of attacks across all metrics, accounting for 45.5% of attacks,  making exploits more than twice as common as any other attack, and almost 3 times more costly on average. We also notice that despite being the second most common attack at 21%, exit scams are only the 4th costliest attacks on average, with both access control and flash loan attacks costing more on average. Abandoned projects are by far the least common attack, and are only slightly less costly than honeypot attacks, the second least damaging attack.
 
 
 ```{r, include=FALSE}
@@ -239,7 +259,50 @@ atk_avg_dmg <- ggplot(data=attack_prop, aes(x=Var1, y=avg_funds_lost)) +
 grid.arrange(atk_freq, atk_net_dmg, atk_avg_dmg, ncol = 1)
 ```
 
-Continuing my analysis into attack rates, the next aspect of the data I analyzed is how the frequency of each type of attack is changing over time. Figure \@ref(fig:attackevo) shows the number of each type of attack year over year since 2016. Here we see that the every type of attack increased in frequency in 2021, with exploits experiencing by far the greatest spike. 
+Furthering my analysis into attack rates, we next look at the rate of all attacks recorded in the REKT database, as opposed to just the 200 costliest. Figure \@ref(fig:allattacks) shows the distribution of all attacks registered in the REKT database. Here we see a wildly different distribution than previously, with honeypots accounting for 66.6% of all recorded DeFi attacks compared to 2.5% of the 200 costliest attacks. Exit scams remain the second most frequent attack at 21.8% while exploits now account for only 6.3% of all attacks compared to 45.5% previously, marking a 622% drop in frequency. Figure \@ref(fig:attackdmgchance) puts all of this data into a table, including a column "Likelihood", which describes the likelihood that an attack of a particular type is one of the 200 costliest attacks of any type. Here we see that flash loans are by far the most likely to be among the 200 costliest attacks, with 36 of the 42 total recorded flash loan attacks being among the 200 costliest, or about 85.7%. Exploits are the second most likely with about 50.5% of all exploits being among the 200 costliest. In stark contrast, we note that honeypots have by far the lowest chance at 0.3%, about 22.3 times less likely than the second least likely attack, exit scams. 
+
+
+```{r allattacks, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "Distribution of All Recorded Attacks"}
+
+# Adding a column recording the total number of recorded attacks of each type
+attack_prop$all_attacks<- c(14, 97, 623, 180, 42, 1907)
+
+# Graphing this distribution
+net_atk_freq <- ggplot(data=attack_prop, aes(x=Var1, y=all_attacks)) +
+  geom_bar(stat='identity', fill='maroon2') +
+  labs(x = 'Type of Attack',
+       y = 'Number of Recorded Attacks',
+       title = "Total Number of Recorded Attacks of Each Type") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+net_atk_freq
+```
+
+
+
+```{r atkdmgchance, fig.width=12, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "Distribution of All Recorded Attacks"}
+
+# Adding a column recording the likelihood that a given attack will be one of the 200 costliest
+attack_prop <- mutate(attack_prop, likelihood = 100 * round(Freq / all_attacks, digits=3))
+attack_prop$likelihood <- paste0(attack_prop$likelihood, '%')
+
+
+attack_prop %>% 
+  select(Var1, Freq, total_funds_lost, avg_funds_lost, all_attacks, likelihood) %>% 
+  kable(
+    caption = "Key Data on Attacks",
+    col.names = c("Type of Attack", "Attacks (Top 200)", "Net Funds Lost\n(Top 200)", "Average Funds Lost (Top 200)", "Total Recorded Attacks", "Likelihood"),
+    digits = 2,
+    booktabs = TRUE,
+    linesep = ""
+  ) %>% 
+column_spec(3:5, width = "3cm")
+
+```
+
+
+
+The next aspect of the data I analyzed is how the frequency of each type of attack is changing over time. Figure \@ref(fig:attackevo) shows the number of each type of attack year over year since 2016. Here we see that the every type of attack increased in frequency in 2021, with exploits experiencing by far the greatest spike. As well, we see proportionally more attacks per month in 2022 than we did in 2021, indicating that attacks are becoming both more common and costlier.  
 
 ```{r, include=FALSE}
 # Data wrangling in order to get a dataset containing the number of attacks of each time per year since 2016
@@ -298,15 +361,21 @@ df <- melt(thing2 ,  id.vars = 'Date', variable.name = 'Type of Attack')
 
 
 ```{r attackevo, fig.width=9, fig.height=5, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "Number of Attacks per Year"}
+
+
 ggplot(df, aes(Date, value)) +
   geom_line(aes(colour = `Type of Attack`)) +
   labs(x = 'Year',
-      y = 'Number of Attacks') +
-  geom_point(aes(colour = `Type of Attack`))
+      y = 'Number of Attacks',
+      title = 'Types of Attacks by Year') +
+  geom_point(aes(colour = `Type of Attack`)) +
+  theme(plot.title = element_text(hjust = 0.5))
+
 ```
+
 \newpage
 
-### Attack Data by Chain
+## Attack Data by Chain
 
 The final aspect of the data I will analyze is the attack data for individual chains. Of the chains in our data set, only Ethereum, BSC and Polygon have witnessed enough attacks for the data to be statistically significant and interesting. Figure \@ref(fig:attackpropbychain) shows the number of attacks on these chains, broken down by type of attack, so that we may see if certain chains are particularly vulnerable to certain types of attacks. Here we see that exit scams account for a noticeably smaller proportion of attacks on Ethereum compared to other chains, with BSC experiencing 38% more exit scam attacks in total than Ethereum, despite experiencing 39.6% less attacks in total. Exit scams accounted for 50%, 42.9% and 29.5% of the attacks on Solana, Polygon and BSC respectively, compared to only 13% of attacks on Ethereum, indicating that Ethereum is particularly secure against exit scams. On the other hand, we see that Ethereum is disproportionately affected by access control attacks, which account for 16.2% of attacks on ETH, compared to only 6.9% of attacks on BSC, and 0% of the attacks on Solana or Polygon. As well, ETH is the only chain to have experienced a honeypot exploit, which account for 5.1% of ETH attacks. Interestingly, flash loans account for a very similar proportion of attacks on ETH, BSC and Polygon, at 19.2%, , 21.3% and 28.6% respectively, while not Solana did not experience any such attacks. 
 
@@ -354,14 +423,26 @@ barplot(as.matrix(chainattack),
 
 
 
-
-# Results
-
 # Discussion
 
-## First discussion point
+## Attack Prevalence and the Danger of Exploits
 
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
+By far the most prominent type of attacks in our data are exploits, which showed to be the most frequent, cause the most damage in total, and cause the most damage on average. Of the 10 costliest attacks, exploits accounted for 5, including each of the 3 costliest attacks. There are multiple reasons why this is the case. First, exploit is a very broad term that encompasses any attack resulting from a software vulnerability or security flaw. This means that specific exploits such as Sybil attacks and 51% attacks are both categorized as exploits in this data set. As well, there are a multiplicity of avenues that one could use to exploit a protocol, such as the exchange a token is traded on, the smart contracts dictating trades, exploiting an oversight in the chain that the protocol runs in, or an oversight in the protocol code itself. As such, it is expected that exploits would be the most common types of attack, as it is an umbrella term. This does not, however, explain why exploits result in substantially more funds being lost on average than any other attack. An exploit will on average result in more than twice as many lost funds as the second costliest type of attack, access control. In fact, if we sum the average cost of every other type of attack, the resulting sum is still only 7.7% more costly than the average exploit. There are a number of reasons why this could be the case. The primary 
+
+Attacks such as honeypots 
+
+
+
+
+
+Initial results show that some chains are more far more likely to be attacked than others. 
+
+susceptible to certain types of attacks than others, and that attacks are only growing in frequency. As well, we see that certain attacks are far more dangerous than others. In particular, exploits are by far the most frequent type of attack across almost all of the analyzed chains, and account for the vast majority of the total funds lost; 71.3% of the net funds lost from these 200 attacks, or 2.73 times the funds lost from all other types of attacks combined. As well, exploits are more than twice as costly on average than the next most expensive attack, access control. In particular, 
+
+
+
+
+
 
 ## Second discussion point
 
