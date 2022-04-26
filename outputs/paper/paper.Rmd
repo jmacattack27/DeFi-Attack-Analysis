@@ -106,19 +106,14 @@ This dataset scraped from DEFIYIELD's public Rekt Database via the data extracti
 
 ## Strengths and Weaknesses
 
-The data used in this study has both strengths and weaknesses. In particular, the database from which the data in this study was pulled is especially thorough in its technical breakdown of the attacks, including data on whether the attacked project's team is public, if the project had verified source code, as well as links containing proof of the attack and the wallets associated with the attack. The methods through which new data is added to the database are also thorough and involve multiple reviews of the incident, giving us confidence in the validity of the data. As well, the UI of the database website is user friendly, allowing parties to sort the data based on the chain on which the attack occurred, the type of attack, how much funds were lost and the date on which the attack occurred. The website also includes interactive graphs that help visualize the data. On the other hand, the website provides no option to download the database in its entirety or in any capacity, which leads to the main weaknesses of this data; the limited number of observations, and missed variables. As a result of being unable to download the database, I needed to use an external data extraction program, Octoparse, in order to download the data into a .csv file. While I was able to acquire a solid amount of observations on a number of useful variables, a lot of data was lost in the process. In particular, the number of attacks I could scrape was limited by the number of entries the REKT database could show on one page, which maxed out at 200. Luckily this was still enough data points to allow for meaningful statistical analysis, but it only accounts for 7.4% of the total data entries in the database. As well, due to the database's interface, Octoparse was unable to scrape certain variables, in particular the indicator variables: 'Public Team', 'Verified source code' and 'Audited code matches with deployed smart contracts code'. As well, due to the manner in which the technical breakdown of the attack was conveyed in the database, I was unable to use much of the detailed information in these breakdowns. Despite these weaknesses, the final data set retained much of the information on the attacks, and the most important variables were successfully captured. 
+The data used in this study has both strengths and weaknesses. In particular, the database from which the data in this study was pulled is especially thorough in its technical breakdown of the attacks, including data on whether the attacked project's team is public, if the project had verified source code, as well as links containing proof of the attack and the wallets associated with the attack. The methods through which new data is added to the database are also thorough and involve multiple reviews of the incident, giving us confidence in the validity of the data. As well, the UI of the database website is user friendly, allowing parties to sort the data based on the chain on which the attack occurred, the type of attack, how much funds were lost and the date on which the attack occurred. The website also includes interactive graphs that help visualize the data. On the other hand, the website provides no option to download the database in its entirety or in any capacity, which leads to the main weaknesses of this data; the limited number of observations, and missed variables. As a result of being unable to download the database, I needed to use an external data extraction program, Octoparse, in order to download the data into a .csv file. While I was able to acquire a solid amount of observations on a number of useful variables, a lot of data was lost in the process. In particular, the number of attacks I could scrape was limited by the number of entries the REKT database could show on one page, which maxed out at 200. Luckily this was still enough data points to allow for meaningful statistical analysis, but it only accounts for 7.4% of the total data entries in the database. As well, due to the database's interface, Octoparse was unable to scrape certain variables, in particular the indicator variables: 'Public Team', 'Verified source code' and 'Audited code matches with deployed smart contracts code'. As well, due to the manner in which the technical breakdown of the attack was conveyed in the database, I was unable to use much of the detailed information in these breakdowns. Some of the variable values are rather broad, such as exploit, which encompasses a large variety of difference types of attacks; further dividing exploits into more defined categories would help with statistical analysis. Despite these weaknesses, the final data set retained much of the information on the attacks, and the most important variables were successfully captured. 
 
-data on attack type not as detailed as it could be
 
 # Results
 
 ## Exploitation Rates by Chain
 
 The first aspect of the data that I analyzed was which chains were being exploited most frequently. Summing the number of exploits on each chain into a new data frame, Figure \@ref(fig:chainproportion) shows the distribution of attacks across all recorded chains. Here we see that the vast majority of attacks occur on either Ethereum (ETH) or Binance Smart Chain (BSC); 50.5% and 30.5% respectively. The remaining 19% of attacks are spread more evenly across the other chains, with Polygon, Solana, Fantom and Avalanche (AVAX) accounting for a combined 12.5% of total attacks. The remaining 6.5% is distributed evenly across the remaining chains.
-
-Just looking at the number of attacks per chain doesn't give us the full picture on their security. There are numerous factors that would affect the number of attacks attempted on a given chain. One such factor is the varying total value locked (TVL) in each chain. The more value locked in a chain, the more liquidity exists to be exploited; as such, larger chains like Ethereum are naturally subject to more attacks. Using data from DeFi Llama (@Llama) on the total value locked across each chain, Figure \@ref(fig:adjustedattacks) shows the distribution of the number of exploits on each chain, divided by the TVL (in billions) in that chain. This gives us a more realistic picture of the rate at which each chain is being targeted. Note that this figure includes two graphs: one containing data on Polkadot, and one without data on Polkadot. Due to the relatively tiny amount of value locked in the Polkadot chain (about $3.84 million), the exploits to TVL ratio for Polkadot was more than 31x greater than the next highest ratio. As a result, the scale of the graph is disproportionately affected making it far less interpretable. As such, a second graph is included that omits data on Polkadot. Here we see a wildly different distribution than in the previous figure, with Ethereum going from the by far the most exploited chain to the third least exploited, while chains such as Algorand (ALGO), Heco, RONIN and EOS all saw substantial increases in their adjusted attack rates. Cronos and Tron remain the least exploited, while Avalanche (AVAX) also saw a noticeable decrease in exploit rates relative to the other chains. 
-
-\newpage
 
 
 ```{r, include = FALSE}
@@ -164,6 +159,10 @@ chain_prop[5, 2] = 96 + 5
 chain_prop[11, 2] = 7 + 3
 
 chain_prop <- add_row(chain_prop, Chain = 'CRONOS', Number.of.Exploits = 1)
+
+# Adding a column for the total number of recorded exploits on each chain
+
+chain_prop$total_exploits <- c(1, 6, 1668, 2, 944, 16, 1, 3, 1, 1, 94, 1, 8, 1, 3)
 ```
 
 
@@ -179,6 +178,33 @@ chain_prop %>%
   scale_x_discrete(guide = guide_axis(n.dodge=3)) +
   theme(plot.title = element_text(hjust = 0.5))
 ```
+
+Figure \@ref(fig:attackchainprop) shows the distribution of all recorded attacks on each chain, subcategorized into attacks that are among the 200 costliest and attacks that are not. Here we see that BSC and ETH are still by far the most attacked chains, but that BSC has been successfully attacked far more times than Ethereum, with BSC accounting for exactly 60% of all recorded attacks, while Ethereum accounts for 34%. This result, as well as a visual inspection of the graph, indicates that attacks on Ethereum are in general far more costly than attacks on BSC, and are also less frequent. The only other chain with a statistically significant amount of attacks is Polygon, with 94 recorded attacks, 10 of which are among the 200 costliest. Excluding attacks on BSC and ETH, Polygon accounts for 68.1% of all attacks, 5% of attacks in the top 200 costliest and 82.4% of all other attacks. 
+
+```{r, include=FALSE}
+# Creating a new dataframe in a format such that we can make a stacked barchart
+
+new_prop2 <- data.frame(chain_prop$Number.of.Exploits, c('ALGO', 'AVAX', 'BSC', 'EOS', 'ETH', 'FANTOM', 'HARMONY', 'HECO', 'MOVR', 'POLKADOT', 'POLYGON', 'RONIN', 'SOLANA', 'TRON', 'CRONOS'))
+new_prop2$ExploitCategory <- rep('Top 200 Costliest Attacks', 15)
+
+reprows <- new_prop2[1:15,]
+new_prop2 <- rbind(new_prop2, reprows)
+new_prop2[16:30, 3] <- rep('All Other Attacks')
+new_prop2[16:30, 1] <- c(0, 2, 1607, 0, 843, 11, 0, 1, 0, 0, 84, 0, 2, 0, 2)
+colnames(new_prop2) <- c('Number of Attacks', 'Chain', 'Exploit Category')
+```
+
+
+```{r attackchainprop, fig.height = 7, fig.width = 11, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "Number of Attacks by Chain"}
+# Visualizing the data
+ggplot(new_prop2, aes(fill=`Exploit Category`, y=`Number of Attacks`, x=Chain)) + 
+  geom_bar(position="stack", stat="identity") +
+  labs(title = "Total Attack Distribution Across Chains, Categorized by Funds Lost") +
+  scale_x_discrete(guide = guide_axis(n.dodge=3)) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+Just looking at the number of attacks per chain doesn't give us the full picture on their security. There are numerous factors that would affect the number of attacks attempted on a given chain. One such factor is the varying total value locked (TVL) in each chain. The more value locked in a chain, the more liquidity exists to be exploited; as such, larger chains like Ethereum are naturally subject to more attacks. Using data from DeFi Llama (@Llama) on the total value locked across each chain, Figure \@ref(fig:adjustedattacks) shows the distribution of the number of exploits on each chain, divided by the TVL (in billions) in that chain. This gives us a more realistic picture of the rate at which each chain is being targeted. Note that this figure includes two graphs: one containing data on Polkadot, and one without data on Polkadot. Due to the relatively tiny amount of value locked in the Polkadot chain (about $3.84 million), the exploits to TVL ratio for Polkadot was more than 31x greater than the next highest ratio. As a result, the scale of the graph is disproportionately affected making it far less interpretable. As such, a second graph is included that omits data on Polkadot. Here we see a wildly different distribution than in the previous figure, with Ethereum going from the by far the most exploited chain to the third least exploited, while chains such as Algorand (ALGO), Heco, RONIN and EOS all saw substantial increases in their adjusted attack rates. Cronos and Tron remain the least exploited, while Avalanche (AVAX) also saw a noticeable decrease in exploit rates relative to the other chains. 
 
 
 ```{r adjustedattacks, fig.width=9, fig.height=9, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "The Distribution of Attacks Adjusted for Total Value Locked"}
@@ -234,6 +260,7 @@ attack_prop$total_funds_lost <- c(abandoned_funds, access_control_funds, exit_sc
 attack_prop <- mutate(attack_prop, avg_funds_lost = total_funds_lost / Freq)
 ```
 
+
 ```{r attackdata, fig.width=9, fig.height=9, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "Distribution of Attack Type by Quantity, Net Loss and Average Loss per Attack"}
 atk_freq <- ggplot(data=attack_prop, aes(x=Var1, y=Freq)) +
   geom_bar(stat='identity', fill='darkgreen') +
@@ -259,7 +286,7 @@ atk_avg_dmg <- ggplot(data=attack_prop, aes(x=Var1, y=avg_funds_lost)) +
 grid.arrange(atk_freq, atk_net_dmg, atk_avg_dmg, ncol = 1)
 ```
 
-Furthering my analysis into attack rates, we next look at the rate of all attacks recorded in the REKT database, as opposed to just the 200 costliest. Figure \@ref(fig:allattacks) shows the distribution of all attacks registered in the REKT database. Here we see a wildly different distribution than previously, with honeypots accounting for 66.6% of all recorded DeFi attacks compared to 2.5% of the 200 costliest attacks. Exit scams remain the second most frequent attack at 21.8% while exploits now account for only 6.3% of all attacks compared to 45.5% previously, marking a 622% drop in frequency. Figure \@ref(fig:attackdmgchance) puts all of this data into a table, including a column "Likelihood", which describes the likelihood that an attack of a particular type is one of the 200 costliest attacks of any type. Here we see that flash loans are by far the most likely to be among the 200 costliest attacks, with 36 of the 42 total recorded flash loan attacks being among the 200 costliest, or about 85.7%. Exploits are the second most likely with about 50.5% of all exploits being among the 200 costliest. In stark contrast, we note that honeypots have by far the lowest chance at 0.3%, about 22.3 times less likely than the second least likely attack, exit scams. 
+Furthering my analysis into attack rates, we next look at the total number of attacks recorded in the REKT database. Figure \@ref(fig:allattacks) shows the distribution of all attacks registered in the REKT database. Here we see a wildly different distribution than previously, with honeypots accounting for 66.6% of all recorded DeFi attacks compared to 2.5% of the 200 costliest attacks. Exit scams remain the second most frequent attack at 21.8% while exploits now account for only 6.3% of all attacks compared to 45.5% previously, marking a 622% drop in frequency. Figure \@ref(fig:atkdmgchance) puts all of this data into a table, including a column "Likelihood", which describes the likelihood that an attack of a particular type is one of the 200 costliest attacks. Here we see that flash loans are by far the most likely to be among the 200 costliest attacks, with 36 of the 42 total recorded flash loan attacks being among the 200 costliest, or about 85.7%. Exploits are the second most likely with about 50.5% of all exploits being among the 200 costliest. In stark contrast, we note that honeypots have by far the lowest chance at 0.3%, about 22.3 times less likely than the second least likely attack, exit scams. 
 
 
 ```{r allattacks, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "Distribution of All Recorded Attacks"}
@@ -277,7 +304,6 @@ net_atk_freq <- ggplot(data=attack_prop, aes(x=Var1, y=all_attacks)) +
 
 net_atk_freq
 ```
-
 
 
 ```{r atkdmgchance, fig.width=12, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "Distribution of All Recorded Attacks"}
@@ -301,8 +327,8 @@ column_spec(3:5, width = "3cm")
 ```
 
 
-
 The next aspect of the data I analyzed is how the frequency of each type of attack is changing over time. Figure \@ref(fig:attackevo) shows the number of each type of attack year over year since 2016. Here we see that the every type of attack increased in frequency in 2021, with exploits experiencing by far the greatest spike. As well, we see proportionally more attacks per month in 2022 than we did in 2021, indicating that attacks are becoming both more common and costlier.  
+
 
 ```{r, include=FALSE}
 # Data wrangling in order to get a dataset containing the number of attacks of each time per year since 2016
@@ -362,7 +388,6 @@ df <- melt(thing2 ,  id.vars = 'Date', variable.name = 'Type of Attack')
 
 ```{r attackevo, fig.width=9, fig.height=5, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "Number of Attacks per Year"}
 
-
 ggplot(df, aes(Date, value)) +
   geom_line(aes(colour = `Type of Attack`)) +
   labs(x = 'Year',
@@ -409,6 +434,7 @@ colnames(chainattack) <- c("ETH", "BSC", "Polygon", "Solana")
 rownames(chainattack) <- c("Abandoned", "Access control", "Exit Scam", "Exploit", "Flash loan", "Honeypot")
 ```
 
+
 ```{r attackpropbychain, fig.width=9, fig.height=5, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "Number of Attacks per Chain by Attack Type"}
 barplot(as.matrix(chainattack), 
         col=viridis(6), 
@@ -427,30 +453,32 @@ barplot(as.matrix(chainattack),
 
 ## Attack Prevalence and the Danger of Exploits
 
-By far the most prominent type of attacks in our data are exploits, which showed to be the most frequent, cause the most damage in total, and cause the most damage on average. Of the 10 costliest attacks, exploits accounted for 5, including each of the 3 costliest attacks. There are multiple reasons why this is the case. First, exploit is a very broad term that encompasses any attack resulting from a software vulnerability or security flaw. This means that specific exploits such as Sybil attacks and 51% attacks are both categorized as exploits in this data set. As well, there are a multiplicity of avenues that one could use to exploit a protocol, such as the exchange a token is traded on, the smart contracts dictating trades, exploiting an oversight in the chain that the protocol runs in, or an oversight in the protocol code itself. As such, it is expected that exploits would be the most common types of attack, as it is an umbrella term. This does not, however, explain why exploits result in substantially more funds being lost on average than any other attack. An exploit will on average result in more than twice as many lost funds as the second costliest type of attack, access control. In fact, if we sum the average cost of every other type of attack, the resulting sum is still only 7.7% more costly than the average exploit. There are a number of reasons why this could be the case. The primary 
-
-Attacks such as honeypots 
+By far the most prominent type of attacks in our data are exploits, which showed to be the most frequent, cause the most damage in total, and cause the most damage on average. Of the 10 costliest attacks, exploits accounted for 5, including each of the 3 costliest attacks. There are multiple reasons why this is the case. First, exploit is a very broad term that encompasses any attack resulting from a software vulnerability or security flaw. This means that specific exploits such as Sybil attacks and 51% attacks are both categorized as exploits in this data set. As well, there are a multiplicity of avenues that one could use to exploit a protocol, such as the exchange a token is traded on, the smart contracts dictating trades, exploiting an oversight in the chain that the protocol runs in, or an oversight in the protocol code itself. As such, it is expected that exploits would be the most common types of attack, as it is an umbrella term. This does not, however, explain why exploits result in substantially more funds being lost on average than any other attack. An exploit will on average result in more than twice as many lost funds as the second costliest type of attack, access control. In fact, if we sum the average cost of every other type of attack, the resulting sum is still only 7.7% more costly than the average exploit. These results changed when looking at the total number of attacks as opposed to just the top 200 costliest, where we saw exploits fall from by far the most frequent attack (45.5%) to the 3rd most frequent attack (6.3%). This supports the earlier finding that exploits are by far the costliest attack on average, and indicates that while exploits are harder to find than originally thought, the reward for finding them (or cost for having them) is huge. 
 
 
+## Flash Loans
+
+Of the analyzed attack data, one of the most notable results was the rate at which flash loan attacks end up among the 200 costliest attacks; despite accounting for only 1.5% of all recorded attacks, 85.7% of all flash loan attacks were among the 200 costliest attacks, by far the greatest likelihood of any attack. Flash loan attacks occur involve taking out a flash loan from a lending protocol, arbitraging the borrowed money, and then manipulating the price of the one or multiple tokens in order to turn a profit, before returning repaying the loan. Flash loan attacks are particularly costly for a number of reasons. All flash loans are executed via smart contract, meaning that flash loans are entirely automated. By nature of the instantaneous execution of flash loans, attackers are able to both repeat the process multiple times, as well as execute it across multiple markets. Not only this, but because the market manipulation is performed with loaned assets drawn from a general lending pool, returning these assets to the pool effectively washes the attacker's hands of the attack and eliminates much of the trace, making flash loan attacks especially low risk for attackers. Somewhat ironically, the key factors that make flash loans so innovative--anonymity, no collateral and instantaneous execution--are the same things that make them so costly when exploited. 
 
 
+## Overall Chain Security
 
-Initial results show that some chains are more far more likely to be attacked than others. 
-
-susceptible to certain types of attacks than others, and that attacks are only growing in frequency. As well, we see that certain attacks are far more dangerous than others. In particular, exploits are by far the most frequent type of attack across almost all of the analyzed chains, and account for the vast majority of the total funds lost; 71.3% of the net funds lost from these 200 attacks, or 2.73 times the funds lost from all other types of attacks combined. As well, exploits are more than twice as costly on average than the next most expensive attack, access control. In particular, 
-
-
+In our initial graph of the distribution of attacks across chains, we saw that the vast majority of attacks occured on BSC or ETH. However, this graph is misleading with regards to its implications for chain security; because we are looking at the distribution of the 200 costliest attacks, chains with a larger userbase such as ETH and BSC are naturally more likely to record more such attacks. Thus, we also graph the distribution of all attacks in Figure \@ref(fig:attackchainprop), with each attack being categorized as either in the top 200 or not. Here we see that BSC has experienced by far the most successful attacks, followed by Ethereum, with a substantial drop off between Ethereum and the next most attacked chain, Polygon. When we adjust for 
+the size of the chain by taking the ratio of attacks to total value locked in Figure \@ref(fig:adjustedattacks), we see that EOS is now the most exploited chain, with a Attack to TVL ratio of 7.83, compared to 0.874 for ETH and 4.54 for BSC. Notably, ETH saw the sharpest drop relative to the other chains when accounting for TVL, dropping from by far the most attacked chain to the 11th most. This indicates that relative to its size, Ethereum is actually one of the most secure chains that we analyzed. Furthermore, in reality Ethereum is even more secure than this metric indicates. If, for example, instead of considering total value locked in a chain in terms of dollars we consider the total value locked in a chain as a percentage of the total value locked across all chains, then we would see that while TVL in Ethereum currently accounts for 54.81% of TVL across all chains, it accounted for 72.95% as recently as last year (@Llama). If we go back a couple months further to January 2021, Ethereum accounted for a whopping 97.18% of all the value on chains, completely dominating the space. In Figure \@ref(fig:attackevo), we see that a significant portion of the 200 costliest attacks occurred in and before 2021. This means that while Ethereum has experienced the most costly attacks and the second most attacks overall, it has been by far the biggest target of any chain since our earliest data points, and while relative to its current TVL it appears to be the 4th most secure chain, in reality it is likely far more secure than this metric indicates.  
 
 
+## Chain Security to Specific Attacks
 
+In Figure \@ref(fig:attackpropbychain) we see the distribution of attacks on Ethereum, BSC, Polygon and Solana, categorized by type of attack. Here we note that Ethereum appears particularly secure against exit scams, which account for only 12.87% of attacks on Ethereum, compared to 29.51% of attacks on BSC, 42.8% of the attacks on Polygon and 50% of the attacks on Solana, however the latter 2 statistics are less meaningful due to the far smaller sample size. An exit scam involves heavily promoting a project in order to drive investment from individuals or companies, before running away with investor's money. By their nature, exit scams are more about manipulating individuals than they are exploiting loopholes or technical oversights. As such, the best defense against exit scams doesn't involve cybersecurity so much as it does educating your userbase about exit scams and how to spot them. A brief scroll through Ethereum's [website](https://ethereum.org/en/) reveals the strides that Ethereum has made in the realm of user education, with a dedicated "Learn" section containing guides on everything to do with Ethereum, from smart contracts to consensus mechanisms, including a section titled "Ethereum security and scam prevention" which outlines basic safety practices as well as common scams and how to spot them. At the bottom this section is a list of links for further reading, including multiple links on web security, crypto security and indeed scam education. Of all the chains, Ethereum has by far the greatest wealth of information resources on everything to do with crypto, as well as specific sections dedicated to scam detection and prevention. Needless to say, this would almost invariably play a factor in the distinctly low rate of exit scams on Ethereum.
 
-## Second discussion point
+Another notable result is the disproportionate rate at which Ethereum appears affected by access control scams, which involve a hacker gaining access to one or multiple user's wallets and siphoning user funds to their own account. At first glance this seems to contradict the previous result about Ethereum's successful efforts in educating its users; after all, gaining access to a users wallet involves getting the users key, which usually occurs as a result of the user inadvertently exposing his own key. Thus,  access control scams would appear to be another type of scam wherein the individual user is most often at fault, rather than a coding oversight. However, reading through the technical breakdown of some of the costliest access control scams on the REKT database shows that this is not always the case. For example, the costliest recorded access control scam occurred back in December 2021, when gaming and NFT platform Vulcan Forged was hacked, exposing 96 high value wallets. Vulcan Forged offers users a wallet service known as MyForge, which allows users to manage their wallets through Vulcan's platform. The passwords to users wallets were co-managed by both the user and Vulcan, with Vulcan storing user's private keys on their own side. Thus, when Vulcan was hacked, hackers gained access to 96 user's wallets, stealing 4.5 million PYR tokens (Vulcan's native token), or about 23% of the circulating supply (@cryptobriefing), roughly equivalent to $140 million. Because Vulcan Forged is built on Ethereum, and the lost of funds occurred due to hackers gaining access to user's private keys, this attack is classified as an access control attack on Ethereum, despite no wrongdoing or bad security practices on behalf of the users. Many of the other Ethereum access control hacks also occur in a similar method, where a protocol built on Ethereum is hacked and user's private keys are exposed. This is indicative of one possible reason for the prevalence of access control hacks on Ethereum; there are far more projects built on Ethereum than on any other chain, and of the projects built on other chains, many of them are also launched on Ethereum as well. DeFi Prime, a digital media and analytics service build for the DeFi community, has a total of 225 DeFi projects listed in their DeFi ecosystem, of which 203 are built on Ethereum, compared to 43 built on BSC (@prime). Simply put, this means that there are there more avenues for hackers to gain access to user passwords on Ethereum than on other chains. 
 
-## Third discussion point
 
 ## Weaknesses and next steps
 
-Weaknesses and next steps should also be included.
+There are some weaknesses in 
+
+
 
 \newpage
 
@@ -463,6 +491,8 @@ Weaknesses and next steps should also be included.
 Below is a alphabetized list containing key terms used throughout this paper and their definitions. 
 
   * Bad Actor: An entity that aims to circumvent security protocols and exploit projects and/or individuals for personal gain. 
+  
+  * Chain: 
   
   * Smart Contract: A self-executing agreement, written in lines of code, that automatically executes when predetermined
   conditions are met. Smart contracts allow for agreements to execute instantaneously, without the involvement of intermediaries,
